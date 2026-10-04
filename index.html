@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <meta name="theme-color" content="#f5f7f4">
+    <meta name="description" content="通过 AI 粘贴回答或亲自作答，生成本地心理年龄与行为风格娱乐画像。">
+    <title>情境画像 · 第一反应测验</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script type="module" src="./app.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="wordmark" href="#top" aria-label="情境画像首页">
+        <span class="wordmark-mark" aria-hidden="true">反</span>
+        <span>情境画像</span>
+      </a>
+      <p class="privacy-note"><span class="privacy-dot" aria-hidden="true"></span>答案仅在本机处理</p>
+    </header>
+
+    <main id="top" class="page-shell">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="intro-copy">
+          <p class="eyebrow">第一反应情境画像</p>
+          <h1 id="page-title">把第一反应，<br>整理成一张画像。</h1>
+          <p class="intro-description">可以把 36 个日常情境交给 AI，也可以自己逐题作答；完成后在本机查看偏好画像。</p>
+        </div>
+        <ol class="how-it-works" aria-label="使用步骤">
+          <li><span class="step-number">01</span><span>选择作答方式</span></li>
+          <li><span class="step-number">02</span><span>完成 36 道题</span></li>
+          <li><span class="step-number">03</span><span>查看画像</span></li>
+        </ol>
+      </section>
+
+      <section class="workflow" aria-label="题目与回答">
+        <article class="panel prompt-panel" aria-labelledby="copy-title">
+          <div class="panel-heading">
+            <span class="step-tag">步骤 1</span>
+            <span class="panel-count">36 道情境题</span>
+          </div>
+          <h2 id="copy-title">复制题目</h2>
+          <p class="panel-description">将完整题目和统一作答说明交给 AI。</p>
+          <button class="button button-primary" id="copy-button" type="button" disabled>正在准备题目…</button>
+          <p class="copy-status" id="copy-status" role="status" aria-live="polite">题目只包含作答内容，不包含评分规则。</p>
+          <div class="manual-copy" id="manual-copy" hidden>
+            <label for="prompt-fallback">无法自动复制。请手动选择并复制以下内容：</label>
+            <textarea id="prompt-fallback" rows="8" readonly spellcheck="false"></textarea>
+            <button class="button button-secondary button-small" id="select-prompt" type="button">选择全部题目</button>
+          </div>
+        </article>
+
+        <form class="panel answer-panel" id="answer-form" novalidate>
+          <div class="panel-heading">
+            <label class="step-tag" for="answers-input">步骤 2</label>
+            <span class="panel-count">1.A 至 36.D</span>
+          </div>
+          <h2>粘贴 AI 的回答</h2>
+          <p class="panel-description">支持“1.A”逐行格式，也可包含多余说明文字。</p>
+          <label class="visually-hidden" for="answers-input">AI 对 36 道题的答案</label>
+          <textarea id="answers-input" name="answers" rows="7" placeholder="1.A&#10;2.C&#10;3.B&#10;……&#10;36.D" spellcheck="false" autocapitalize="characters" aria-describedby="answer-help validation-message"></textarea>
+          <p class="input-help" id="answer-help">每题选一个 A / B / C / D。答案不会发送到服务器。</p>
+          <div class="validation-message" id="validation-message" role="alert" aria-live="polite" hidden></div>
+          <div class="form-actions">
+            <button class="button button-primary" type="submit" disabled>生成画像</button>
+            <button class="button button-quiet" id="clear-button" type="button">清空</button>
+          </div>
+        </form>
+      </section>
+      <details class="panel personal-panel" id="personal-questionnaire">
+        <summary class="personal-summary">
+          <span class="personal-summary-copy">
+            <span class="step-tag">个人作答</span>
+            <span class="personal-summary-title">我也来做题</span>
+          </span>
+          <span class="personal-summary-hint">36 道题</span>
+        </summary>
+        <div class="personal-body">
+          <p class="panel-description">按照你的第一倾向为每题选择一个选项。个人作答和 AI 粘贴回答互相独立。</p>
+          <p class="personal-load-status" id="personal-load-status" role="status" aria-live="polite">正在读取题目…</p>
+          <p class="personal-progress" id="personal-progress" aria-live="polite">已作答 0 / 36</p>
+          <div class="personal-validation" id="personal-validation" role="alert" aria-live="polite" hidden></div>
+          <ol class="personal-question-list" id="personal-question-list" aria-label="36 道个人情境选择题"></ol>
+          <div class="form-actions">
+            <button class="button button-primary" id="personal-submit" type="button" disabled>生成个人画像</button>
+            <button class="button button-quiet" id="personal-reset" type="button" disabled>重置选择</button>
+          </div>
+          <p class="input-help">选择会保留在本页，关闭问卷不会清除答案。所有处理都在本机完成。</p>
+        </div>
+      </details>
+
+      <section class="results-section" id="results" aria-labelledby="results-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">你的结果</p>
+            <h2 id="results-title">一份偏好画像</h2>
+          </div>
+          <span class="disclaimer-badge">娱乐参考 · 非心理诊断</span>
+        </div>
+
+        <div class="empty-result" id="empty-result">
+          <div class="empty-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div>
+            <h3>准备好时，再生成画像</h3>
+            <p>可粘贴 AI 的完整回答，或展开“我也来做题”亲自回答 36 题，查看相同的画像指标。</p>
+          </div>
+        </div>
+
+        <div class="result-content" id="result-content" hidden>
+          <p class="result-source" id="result-source"></p>
+          <p class="result-limit-note">所有指数均为 0–100 的相对偏好分，不是年龄，也不表示好坏或成熟度；“心理年龄”是本测试的娱乐原型标签，不是实际年龄。</p>
+          <div class="result-overview">
+            <section class="age-result" aria-labelledby="age-heading" role="status" aria-live="polite" aria-atomic="true">
+              <p class="result-kicker" id="age-heading">心理年龄画像</p>
+              <div class="age-number"><span id="age-value">0</span><span class="age-unit">岁</span></div>
+              <p class="age-label" id="age-label"></p>
+              <p class="prototype-note" id="prototype-note"></p>
+              <div class="prototype-detail" id="prototype-detail"></div>
+            </section>
+
+            <section class="dimension-result chart-panel" aria-labelledby="dimension-title">
+              <div class="chart-heading">
+                <div>
+                  <p class="result-kicker">心理年龄画像</p>
+                  <h3 id="dimension-title">五维偏好</h3>
+                </div>
+                <span class="chart-scale">0–100</span>
+              </div>
+              <svg class="radar-chart" id="dimension-chart" viewBox="0 0 420 340" role="img" aria-labelledby="dimension-svg-title dimension-svg-description">
+                <title id="dimension-svg-title">五维偏好雷达图</title>
+                <desc id="dimension-svg-description">心理年龄的五个维度，分值范围为零到一百。</desc>
+              </svg>
+              <ul class="value-list" id="dimension-values" aria-label="五维偏好准确分值"></ul>
+            </section>
+          </div>
+
+          <section class="behavior-result chart-panel" aria-labelledby="behavior-title">
+            <div class="chart-heading">
+              <div>
+                <p class="result-kicker">独立模块，不计入心理年龄</p>
+                <h3 id="behavior-title">行为风格</h3>
+              </div>
+              <span class="chart-scale">0–100</span>
+            </div>
+            <div class="behavior-layout">
+              <svg class="radar-chart behavior-chart" id="behavior-chart" viewBox="0 0 420 340" role="img" aria-labelledby="behavior-svg-title behavior-svg-description">
+                <title id="behavior-svg-title">六项行为风格雷达图</title>
+                <desc id="behavior-svg-description">六项独立的行为风格指标，分值范围为零到一百，不表示好坏。</desc>
+              </svg>
+              <ul class="behavior-values" id="behavior-values" aria-label="行为风格准确分值"></ul>
+            </div>
+          </section>
+
+          <section class="component-section" aria-labelledby="component-title">
+            <div class="subsection-heading">
+              <div>
+                <p class="result-kicker">维度换算，仅供参考</p>
+                <h3 id="component-title">分项年龄</h3>
+              </div>
+              <p>自主倾向只呈现指数，不直接换算为年龄。</p>
+            </div>
+            <ul class="component-values" id="component-values"></ul>
+          </section>
+
+          <section class="fun-section" aria-labelledby="fun-title">
+            <div class="subsection-heading">
+              <div>
+                <p class="result-kicker">轻松看看</p>
+                <h3 id="fun-title">趣味指数</h3>
+              </div>
+              <p>分值范围 0–100，不是年龄；高低不代表好坏、能力或成熟度。</p>
+            </div>
+            <ul class="fun-values" id="fun-values"></ul>
+          </section>
+
+          <details class="method-details">
+            <summary>了解计算方式与题目范围</summary>
+            <div class="method-copy">
+              <p>心理年龄根据第 1–30 题形成探索、风险、自主、理想主义、规划五项 0–100 画像，再与六个内部年龄原型计算加权距离。先取距离最近的原型，再从它的相邻年龄原型中选择距离较近者，以距离倒数加权插值；参与插值的原型距离为零时，直接采用该原型年龄。</p>
+              <p>第 4 题和第 16 题不参与五维年龄计算。第 31–36 题只用于独立的行为风格图，不计入心理年龄。</p>
+              <p>年龄原型是本测试为娱乐比较设计的内部模型，未经真实人群大样本常模验证。结果表示“在这套测试中的行为风格最像某个年龄原型”，不代表真实年龄、诊断或科学测定。</p>
+              <details class="distance-details">
+                <summary>查看各年龄原型距离</summary>
+                <ul id="prototype-distances" class="distance-list"></ul>
+              </details>
+            </div>
+          </details>
+
+          <details class="answer-review">
+            <summary>查看 36 题原文与所选答案</summary>
+            <ol id="answer-review-list" class="review-list"></ol>
+          </details>
+        </div>
+      </section>
+
+      <footer class="page-footer">
+        <p>本工具为娱乐用途，不提供心理评估、医疗建议或对 AI 能力的判断。</p>
+      </footer>
+    </main>
+  </body>
+</html>
